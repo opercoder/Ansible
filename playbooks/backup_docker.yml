@@ -1,0 +1,18 @@
+- hosts: dockerservers
+  tasks:
+    - name: get docker backups
+      script: /etc/ansible/backup_containers.sh
+    - name: get dir docker_machines
+      shell: tar --ignore-failed-read -czf /home/user/backup/containers/docker_machines.tar.gz /root/docker_machines
+    - name: find
+      shell: find /home/user/backup/containers -type f
+      register: files_to_copy
+    - name: fetch
+      fetch:  src={{ item }} dest=/mnt/disk/backup/containers/{{ inventory_hostname }}/ flat=yes
+      with_items: "{{ files_to_copy.stdout_lines }}"
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: del old backups
+      shell: find /home/user/backup/containers/ -type f -atime 30 -delete
