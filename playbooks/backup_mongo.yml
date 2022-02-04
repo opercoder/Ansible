@@ -1,0 +1,21 @@
+- name: backup mongo
+  hosts: zabbix
+  vars:
+    filedir_ansible: /mnt/disk/backup/mongo/
+  tasks:
+    - name: create dir backup mongo
+      ansible.builtin.shell: |
+        # Создание директории для backup 
+        mkdir -p {{ filedir_ansible }}
+        mkdir -p {{ filedir_ansible }}/{{ ansible_hostname }}
+        exit 0
+      delegate_to: localhost
+    - name: make backup mongo
+      ansible.builtin.shell: |
+        docker exec tablinum_mongo_1 sh -c 'mongodump -d tablinum -o /tabdump'
+        exit 0
+    - name: copy backup mongo to localhost
+      ansible.builtin.shell: |
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/root/docker_machines/tablinum/mongo/dump/tablinum/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        exit 0
+      delegate_to: localhost
