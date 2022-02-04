@@ -1,0 +1,12 @@
+- hosts: container-server
+  tasks:
+    - name: rm old backup 
+      shell: rm -f /home/user/backup/data/*
+    - name: tar data
+      script: /etc/ansible/backup_container-serv.sh
+    - name: find
+      shell: find /home/user/backup/data -type f
+      register: files_to_copy
+    - name: fetch
+      fetch:  src={{ item }} dest=/mnt/disk/backup-volumes/ flat=yes
+      with_items: "{{ files_to_copy.stdout_lines }}"
