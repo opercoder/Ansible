@@ -1,0 +1,80 @@
+- name: backup vgw
+  hosts: vgw
+  vars:
+    filedir_ansible: /mnt/disk/backup/sd/vgw/
+  tasks:
+    - name: backup vgw
+      ansible.builtin.shell: |
+        # Создание директории для backup 
+        mkdir -p {{ filedir_ansible }}
+        mkdir -p {{ filedir_ansible }}/{{ ansible_hostname }}
+        # Копирование нужных директорий
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/root/exec/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/shorewall/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/netplan/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/openvpn/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/crontab/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        exit 0
+      delegate_to: localhost
+
+- name: backup rdp-linux
+  hosts: rdp-linux
+  vars:
+    filedir_ansible: /mnt/disk/backup/sd/rdp-linux/
+  tasks:
+    - name: backup rdp-linux
+      ansible.builtin.shell: |
+        # Создание директории для backup 
+        mkdir -p {{ filedir_ansible }}
+        mkdir -p {{ filedir_ansible }}/{{ ansible_hostname }}
+        # Копирование нужных директорий
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/root/exec/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/shorewall/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/netplan/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/profile "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/crontab "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/xrdp "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/passwd "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/group "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/shadow "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/fstab "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        exit 0
+      delegate_to: localhost
+
+- name: gw-ts
+  hosts: gw-ts
+  vars:
+    filedir_ansible: /mnt/disk/backup/sd/gw-ts/
+  tasks:
+    - name: backup gw-ts
+      ansible.builtin.shell: |
+        # Создание директории для backup 
+        mkdir -p {{ filedir_ansible }}
+        mkdir -p {{ filedir_ansible }}/{{ ansible_hostname }}
+        # Копирование нужных директорий
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/root/exec/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/shorewall/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/netplan/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/ipsec* "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/openvpn/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        exit 0
+      delegate_to: localhost
+
+- name: backup shd
+  hosts: shd
+  vars:
+    filedir_ansible: /mnt/disk/backup/sd/shd/
+  tasks:
+    - name: backup shd
+      ansible.builtin.shell: |
+        # Создание директории для backup 
+        mkdir -p {{ filedir_ansible }}
+        mkdir -p {{ filedir_ansible }}/{{ ansible_hostname }}
+        # Копирование нужных директорий
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/root/exec/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/netplan/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/ssh/ "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/fstab "{{ filedir_ansible }}/{{ ansible_hostname }}"
+        rsync --delete -avzR -e ssh root@"{{ ansible_host }}":/etc/exports"{{ filedir_ansible }}/{{ ansible_hostname }}"
+        exit 0
+      delegate_to: localhost
