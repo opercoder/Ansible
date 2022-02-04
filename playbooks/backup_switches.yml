@@ -1,0 +1,104 @@
+---
+- name: date and dirs
+  hosts: localhost
+  vars:
+    filedir_ansible: /mnt/disk/backup/switches
+  tasks:
+    - name: create backup directory
+      action: shell mkdir -p {{ filedir_ansible }}/{{ lookup('pipe','date +%Y-%m-%d') }}
+      delegate_to: localhost
+
+    - name: delete old files
+      shell: find {{ filedir_ansible }} -name "*" -mtime +30 -delete
+      delegate_to: localhost
+
+- name: get alcatel backups
+  hosts: switches_alcatel
+  gather_facts: false
+  connection: local
+#  ignore_errors: true
+  vars:
+    filedir_ansible: /mnt/disk/backup/switches
+
+  tasks:
+#########=====BEGIN block for alcatel
+  - block:
+    - name: get alcatel conf (sros)
+      telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_ssh_pass }}"
+        login_prompt: "login :"
+        password_prompt: "password :"
+        prompts:
+          - "[>|#]"
+        command:
+          - write terminal
+          - exit
+      register: telnet_output
+
+    - name: delete old files
+      shell: find {{ filedir_ansible }} -name "*" -mtime +20 -delete
+      delegate_to: localhost
+
+    - name: make backup files
+      copy:
+        content: "{{ telnet_output | replace('\\r\\n','\n') }} "
+        dest: "{{ filedir_ansible }}/{{ lookup('pipe','date +%Y-%m-%d') }}/alcatel-{{ inventory_hostname }}.txt"
+
+    when: ansible_network_os == "sros"
+#########=====END block for alcatel
+#########=====BEGIN block for aruba
+- name: get switches hp backups
+  hosts: switches_hp
+  gather_facts: false
+  vars:
+    filedir_ansible: /mnt/disk/backup/switches
+  tasks:
+  - block:
+
+    - name: get conf
+      arubaoss_command:
+        commands: ['sh run']
+      register: aruba_conf
+
+    - name: make file
+      copy:
+        content: "{{ aruba_conf.stdout_lines | to_nice_yaml }}"
+        dest: "{{ lookup('vars','filedir_ansible') }}/{{ lookup('pipe','date +%Y-%m-%d') }}/aruba-{{ inventory_hostname }}.txt"
+
+    when: ansible_network_os == "arubaoss"
+#########=====END block for aruba
+#########=====BEGIN block for cisco
+- name: get CISCO backups
+  hosts: switches_cisco
+  gather_facts: false
+  connection: local
+  vars:
+    filedir_ansible: /mnt/disk/backup/switches
+  tasks:
+#  - block:
+
+    - name: get cisco conf
+      telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_ssh_pass }}"
+        login_prompt: "Username:"
+        prompts:
+          - "[>|#]"
+        command:
+          - "enable\r\n{{ ansible_ssh_pass }}"
+          - terminal length 0
+          - write terminal
+          - exit
+      register: telnet_output
+
+    - name: make backup files
+      copy:
+        content: "{{ telnet_output.output | replace('\\r\\n','\n') }} "
+        dest: "{{ filedir_ansible }}/{{ lookup('pipe','date +%Y-%m-%d') }}/cisco-{{ inventory_hostname }}.txt"
+#    when: ansible_network_os == "cisco.ios.ios"
+#########=====END block for cisco
