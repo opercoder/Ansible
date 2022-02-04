@@ -1,0 +1,10 @@
+- hosts: kube
+  become: true
+  strategy: free
+  tasks:
+    - name: Удаление Kubernetes
+      ansible.builtin.shell: |
+        echo y | kubeadm reset
+        apt-get purge -y --allow-change-held-packages kubelet kubeadm kubectl vim htop docker.io
+        apt-get -y autoremove
+        rm -rf /home/user/.kube
